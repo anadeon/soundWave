@@ -54,17 +54,27 @@ registerForm.addEventListener('submit', function (e) {
     }
 
     if (password !== confirmPassword) {
-        alert('As senhas não coincidem!');
+        showToast(
+            'Erro na confirmação de senha',
+            'As senhas digitadas não coincidem. Verifique e tente novamente.',
+            '⚠️',
+            'warning'
+        );
         return;
     }
 
     if (password.length < 6) {
-        alert('A senha deve ter pelo menos 6 caracteres!');
+        showToast(
+            'Senha muito curta',
+            'A senha deve ter pelo menos 6 caracteres para sua segurança.',
+            '🔒',
+            'error'
+        );
         return;
     }
 
-    // Função para mostrar toast ao se registrar
-    function showToast(title, message, icon = '✅') {
+        // Função para mostrar toast ao se registrar
+        function showToast(title, message, icon = '✅', type = 'success') {
             // Remove toast existente se houver
             const existingToast = document.querySelector('.toast');
             if (existingToast) {
@@ -73,7 +83,7 @@ registerForm.addEventListener('submit', function (e) {
 
             // Criar o elemento toast
             const toast = document.createElement('div');
-            toast.className = 'toast';
+            toast.className = `toast toast-${type}`;
             toast.innerHTML = `
                 <div class="toast-icon">${icon}</div>
                 <div class="toast-content">
@@ -108,12 +118,12 @@ registerForm.addEventListener('submit', function (e) {
                 }
             }, 400);
         }
-    // Mostrar toast de sucesso
-    showToast(
-                'Conta criada com sucesso!',
-                `Bem-vindo ao SoundWave, ${name}! Agora você pode fazer login.`,
-                '🎉'
-            );
+        // Mostrar toast de sucesso
+        showToast(
+            'Conta criada com sucesso!',
+            `Bem-vindo ao SoundWave, ${name}! Agora você pode fazer login.`,
+            '🎉'
+        );
 
             // Limpar formulário e voltar para login após um pequeno delay
             setTimeout(() => {
@@ -121,12 +131,12 @@ registerForm.addEventListener('submit', function (e) {
                 switchToLogin();
             }, 1500);
 
-    // Limpar formulário e voltar para login
-    registerForm.reset();
-    switchToLogin();
+        // Limpar formulário e voltar para login
+        registerForm.reset();
+        switchToLogin();
 
-    // Aqui você integraria com sua API de registro
-});
+        // Aqui você integraria com sua API de registro
+    });
 
 // Validação em tempo real para confirmação de senha
 document.getElementById('confirmPassword').addEventListener('input', function () {

@@ -6,7 +6,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #57ce4a 0%, #390d92 100%);
+            background: linear-gradient(135deg, #57ce4a 0%, #4e2999 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -25,18 +25,6 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             position: relative;
             overflow: hidden;
-        }
-
-        .container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #1db954, #1ed760, #1db954);
-            background-size: 200% 100%;
-            animation: shimmer 3s ease-in-out infinite;
         }
 
         @keyframes shimmer {
@@ -108,7 +96,7 @@
             color: #888;
         }
 
-        .btn {
+        .btn-principal {
             width: 100%;
             padding: 16px;
             background:  #1db954;
@@ -126,27 +114,16 @@
             overflow: hidden;
         }
 
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .btn:hover::before {
+        .btn-principal:hover::before {
             left: 100%;
         }
 
-        .btn:hover {
+        .btn-principal:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 30px rgba(29, 185, 84, 0.4);
         }
 
-        .btn:active {
+        .btn-principal:active {
             transform: translateY(0);
         }
 
@@ -175,22 +152,22 @@
             z-index: 1;
         }
 
-        .switch-form {
+        .switch-form-formulario {
             text-align: center;
             margin-top: 30px;
             color: #b3b3b3;
             font-size: 0.9rem;
         }
 
-        .switch-form a {
-            color: #1db954;
+        .switch-form-formulario a {
+            color: #1db954 !important;
             text-decoration: none;
             font-weight: 600;
             cursor: pointer;
             transition: color 0.3s ease;
         }
 
-        .switch-form a:hover {
+        .switch-form-formulario a:hover {
             color: #1ed760;
             text-decoration: underline;
         }
@@ -292,6 +269,16 @@
             50% { transform: scale(1.05); }
             70% { transform: scale(0.9); }
             100% { transform: scale(1); }
+        }
+
+        .toast.toast-error {
+            background: #b31421aa;
+            box-shadow: 0 10px 30px rgba(255, 71, 87, 0.3);
+        }
+
+        .toast.toast-warning {
+            background:#cd802dcf;
+            box-shadow: 0 10px 30px rgba(255, 165, 2, 0.3);
         }
 
         .toast-progress {
