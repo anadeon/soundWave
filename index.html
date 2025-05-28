@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoundWave - Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>SoundWave</h1>
+            <p>Sua música, seu mundo</p>
+        </div>
+
+        <div class="form-container">
+            <!-- Formulário de Login -->
+            <form class="form active" id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email ou nome de usuário:</label>
+                    <input type="text" id="loginEmail" placeholder="Digite seu email ou usuário" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="loginPassword">Senha:</label>
+                    <input type="password" id="loginPassword" placeholder="Digite sua senha" required>
+                </div>
+
+                <button type="submit" class="btn">Entrar</button>
+
+                <div class="forgot-password">
+                    <a href="#" onclick="showForgotPassword()">Esqueceu sua senha?</a>
+                </div>
+
+                <div class="divider">
+                    <span>OU</span>
+                </div>
+
+                <div class="switch-form">
+                    Não tem uma conta? <a onclick="switchToRegister()">Cadastre-se</a>
+                </div>
+            </form>
+
+            <!-- Formulário de Cadastro -->
+            <form class="form" id="registerForm">
+                <div class="form-group">
+                    <label for="registerName">Nome completo:</label>
+                    <input type="text" id="registerName" placeholder="Digite seu nome completo" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="registerEmail">Email:</label>
+                    <input type="email" id="registerEmail" placeholder="Digite seu email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="registerPassword">Senha:</label>
+                    <input type="password" id="registerPassword" placeholder="Crie uma senha" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirmar senha:</label>
+                    <input type="password" id="confirmPassword" placeholder="Confirme sua senha" required>
+                </div>
+
+                <button type="submit" class="btn">Criar Conta</button>
+
+                <div class="divider">
+                    <span>OU</span>
+                </div>
+
+                <div class="switch-form">
+                    Já tem uma conta? <a onclick="switchToLogin()">Faça login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
