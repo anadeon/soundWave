@@ -178,6 +178,7 @@ function addCardEventListeners(card) {
     playButton.addEventListener('click', async (e) => {
         e.stopPropagation();
         const artistName = card.querySelector('.card-title')?.textContent;
+        const musicName = card.querySelector('.card-title')?.textContent;
         if (!artistName) return;
 
         // Buscar info do artista
@@ -187,6 +188,13 @@ function addCardEventListeners(card) {
             showArtistSummary(artistName, artistInfo.artist.bio.summary);
         } else {
             showNotification(`Informações de "${artistName}" não encontradas.`);
+        }
+
+        if (musicInfo?.similartracks?.track) {
+            const similarTracks = musicInfo.similartracks.track.map(track => {
+                return `${track.name} - ${track.artist?.name || 'Artista desconhecido'}`;
+            }).join('\n');
+            showNotification(`Músicas similares a "${musicName}":\n${similarTracks}`);
         }
     });
 }
@@ -208,10 +216,6 @@ function showArtistSummary(artist, summary) {
                 </div>
                 <div class="modal-content">
                     <p class="summary-text">${summary}</p>
-                    <div class="modal-actions">
-                        <button class="btn-secondary" data-action="close">Fechar</button>
-                        <button class="btn-primary" data-action="more">Saber Mais</button>
-                    </div>
                 </div>
             `;
 
