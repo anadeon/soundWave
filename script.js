@@ -34,8 +34,6 @@ loginForm.addEventListener('submit', function (e) {
     console.log('Tentativa de login:', { email, password });
     alert('Login realizado com sucesso! Redirecionando...');
 
-    // Aqui você integraria com sua API de autenticação
-    // window.location.href = '/dashboard';
 });
 
 // Validação e envio do formulário de registro
@@ -135,7 +133,6 @@ registerForm.addEventListener('submit', function (e) {
         registerForm.reset();
         switchToLogin();
 
-        // Aqui você integraria com sua API de registro
     });
 
 // Validação em tempo real para confirmação de senha
