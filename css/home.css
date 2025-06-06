@@ -11,11 +11,6 @@
             overflow-x: hidden;
         }
 
-        .app-container {
-            display: flex;
-            height: 100vh;
-        }
-
         /* Sidebar */
         .sidebar {
             width: 240px;
@@ -32,9 +27,7 @@
             padding: 0 24px 32px;
             font-size: 28px;
             font-weight: bold;
-            background: linear-gradient(45deg, #1db954, #1ed760);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #1db954;
         }
 
         .nav-item {
@@ -178,9 +171,6 @@
             font-size: 32px;
             font-weight: bold;
             margin-bottom: 32px;
-            background: linear-gradient(45deg, #ffffff, #b3b3b3);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
         }
 
         .section {
@@ -199,17 +189,6 @@
             font-weight: bold;
         }
 
-        .see-all {
-            color: #b3b3b3;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            transition: color 0.3s ease;
-        }
-
-        .see-all:hover {
-            color: #ffffff;
-        }
 
         .cards-grid {
             display: grid;

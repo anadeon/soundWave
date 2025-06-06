@@ -189,13 +189,6 @@ function addCardEventListeners(card) {
         } else {
             showNotification(`Informações de "${artistName}" não encontradas.`);
         }
-
-        if (musicInfo?.similartracks?.track) {
-            const similarTracks = musicInfo.similartracks.track.map(track => {
-                return `${track.name} - ${track.artist?.name || 'Artista desconhecido'}`;
-            }).join('\n');
-            showNotification(`Músicas similares a "${musicName}":\n${similarTracks}`);
-        }
     });
 }
 
