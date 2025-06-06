@@ -33,9 +33,9 @@ class LastFMService {
         return await this.makeRequest('chart.gettopartists', { limit });
     }
 
-    // Buscar álbuns mais populares
-    async getTopAlbums(limit = 12) {
-        return await this.makeRequest('chart.gettopalbums', { limit });
+    // Buscar generos mais populares
+    async getTopTags(limit = 12) {
+        return await this.makeRequest('chart.gettoptags', { limit });
     }
 
     // Buscar faixas mais populares
@@ -64,6 +64,13 @@ class LastFMService {
         return await this.makeRequest('track.getsimilar', { artist, track, limit });
     }
 
+    // Buscar informações de uma música
+    async getTrackInfo(track, artist) {
+        return await this.makeRequest('track.getInfo', { track, artist, lang: 'pt' });
+    }
+
+
+
     // Buscar por termo
     async searchArtists(query, limit = 12) {
         return await this.makeRequest('artist.search', { artist: query, limit });
@@ -90,12 +97,12 @@ function createMusicCard(item, type = 'album') {
 
     if (type === 'artist') {
         title = item.name;
-        description = `${item.playcount ? item.playcount.toLocaleString() : 'N/A'} reproduções`;
+        description = `${item.playcount ? Number(item.playcount).toLocaleString() : 'N/A'} reproduções`;
         imageUrl = item.image && item.image.find(img => img.size === 'large')?.['#text'] || '';
-    } else if (type === 'album') {
+    } else if (type === 'tag') {
         title = item.name;
-        description = item.artist?.name || item.artist || 'Artista desconhecido';
-        imageUrl = item.image && item.image.find(img => img.size === 'large')?.['#text'] || '';
+        description = `${item.taggings ? Number(item.taggings).toLocaleString() : 'Popular tag'}`;
+        imageUrl = '';
     } else if (type === 'track') {
         title = item.name;
         description = item.artist?.name || item.artist || 'Artista desconhecido';
@@ -105,7 +112,7 @@ function createMusicCard(item, type = 'album') {
     card.innerHTML = `
                 <div class="card-image" style="${imageUrl ? `background-image: url('${imageUrl}'); background-size: cover; background-position: center;` : ''}">
                     ${!imageUrl ? '🎵' : ''}
-                    <button class="play-button">Sobre</button>
+                <button class="play-button" data-type="${type}">Sobre</button>
                 </div>
                 <div class="card-title">${title}</div>
                 <div class="card-description">${description}</div>
@@ -121,9 +128,9 @@ async function loadMusicData() {
         showLoading();
 
         // Carregar diferentes tipos de dados
-        const [topArtists, topAlbums, topTracks] = await Promise.all([
+        const [topArtists, topTags, topTracks] = await Promise.all([
             lastfm.getTopArtists(),
-            lastfm.getTopAlbums(),
+            lastfm.getTopTags(),
             lastfm.getTopTracks()
         ]);
 
@@ -138,11 +145,9 @@ async function loadMusicData() {
         }
 
         // Atualizar seção "álbuns mais escutados" com top álbuns
-        if (topAlbums && topAlbums.albums) {
-            updateSection('trending', topAlbums.albums.album, 'album');
+        if (topTags && topTags.tags) {
+            updateSection('trending', topTags.tags.tag, 'tag');
         }
-
-
 
         hideLoading();
     } catch (error) {
@@ -175,98 +180,52 @@ function updateSection(sectionId, data, type) {
 // Função para adicionar event listeners aos cards
 function addCardEventListeners(card) {
     const playButton = card.querySelector('.play-button');
+    const type = playButton.dataset.type;
+    const title = card.querySelector('.card-title')?.textContent;
+
     playButton.addEventListener('click', async (e) => {
         e.stopPropagation();
-        const artistName = card.querySelector('.card-title')?.textContent;
-        const musicName = card.querySelector('.card-title')?.textContent;
-        if (!artistName) return;
+        if (!title || !type) return;
 
-        // Buscar info do artista
-        const artistInfo = await lastfm.getArtistInfo(artistName);
+        if (type === 'artist') {
+            const artistInfo = await lastfm.getArtistInfo(title);
+            if (artistInfo?.artist?.bio?.summary) {
+                showModalContent({
+                    title,
+                    type,
+                    content: artistInfo.artist.bio.summary
+                });
+            } else {
+                showNotification(`Informações de "${title}" não encontradas.`);
+            }
+        } else if (type === 'track') {
+            // Para pegar o artista também, extraímos do card-description
+            const artistName = card.querySelector('.card-description')?.textContent || '';
 
-        if (artistInfo?.artist?.bio?.summary) {
-            showArtistSummary(artistName, artistInfo.artist.bio.summary);
-        } else {
-            showNotification(`Informações de "${artistName}" não encontradas.`);
+            const trackInfo = await lastfm.getTrackInfo(title, artistName);
+
+            if (trackInfo?.track?.wiki?.summary) {
+                showModalContent({
+                    title,
+                    type,
+                    content: trackInfo.track.wiki.summary
+                });
+            } else {
+                showNotification(`Ops... Não há informações sobre a música "${title}"`);
+            }
+        } else if (type === 'tag') {
+            const tagInfo = await lastfm.makeRequest('tag.getinfo', { tag: title, lang: 'pt' });
+            if (tagInfo?.tag?.wiki?.summary) {
+                showModalContent({
+                    title,
+                    type,
+                    content: tagInfo.tag.wiki.summary
+                });
+            } else {
+                showNotification(`Ops... Não há informações sobre a tag "${title}"`);
+            }
         }
     });
-}
-
-function showArtistSummary(artist, summary) {
-    // Criar overlay
-    const overlay = document.createElement('div');
-    overlay.className = 'modal-overlay';
-
-    // Criar modal
-    const modal = document.createElement('div');
-    modal.className = 'artist-modal';
-
-    modal.innerHTML = `
-                <div class="modal-header">
-                    <button class="modal-close" aria-label="Fechar modal">×</button>
-                    <h2 class="artist-name">${artist}</h2>
-                    <span class="artist-tag">Artista</span>
-                </div>
-                <div class="modal-content">
-                    <p class="summary-text">${summary}</p>
-                </div>
-            `;
-
-    // Adicionar ao DOM
-    document.body.appendChild(overlay);
-    document.body.appendChild(modal);
-
-    // Animar entrada
-    requestAnimationFrame(() => {
-        overlay.classList.add('show');
-        modal.classList.add('show');
-    });
-
-    // Event listeners
-    const closeModal = () => {
-        overlay.classList.remove('show');
-        modal.classList.remove('show');
-
-        setTimeout(() => {
-            overlay.remove();
-            modal.remove();
-        }, 300);
-    };
-
-    // Fechar com botão X
-    modal.querySelector('.modal-close').addEventListener('click', closeModal);
-
-    // Fechar com botão Fechar
-    modal.querySelector('[data-action="close"]').addEventListener('click', closeModal);
-
-    // Botão Saber Mais (placeholder)
-    modal.querySelector('[data-action="more"]').addEventListener('click', () => {
-        alert('Redirecionaria para página do artista!');
-    });
-
-    // Fechar com clique no overlay
-    overlay.addEventListener('click', closeModal);
-
-    // Fechar com ESC
-    const handleKeyDown = (e) => {
-        if (e.key === 'Escape') {
-            closeModal();
-            document.removeEventListener('keydown', handleKeyDown);
-        }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-}
-
-// Função para mostrar loading
-function showLoading() {
-    document.querySelectorAll('.cards-grid').forEach(grid => {
-        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #b3b3b3; padding: 40px;">Carregando músicas...</div>';
-    });
-}
-
-// Função para esconder loading
-function hideLoading() {
-    // Loading será removido quando os dados forem carregados
 }
 
 // Função para mostrar notificações
@@ -291,6 +250,66 @@ function showNotification(message) {
     setTimeout(() => {
         notification.remove();
     }, 3000);
+}
+
+
+
+function showModalContent({ title, type, content }) {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+
+    const modal = document.createElement('div');
+    modal.className = 'artist-modal';
+
+    modal.innerHTML = `
+        <div class="modal-header">
+            <button class="modal-close" aria-label="Fechar modal">×</button>
+            <h2 class="artist-name">${title}</h2>
+            <span class="artist-tag">${type === 'track' ? 'Música' : 'Artista'}</span>
+        </div>
+        <div class="modal-content">
+            <p class="summary-text">${content}</p>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+    document.body.appendChild(modal);
+
+    requestAnimationFrame(() => {
+        overlay.classList.add('show');
+        modal.classList.add('show');
+    });
+
+    const closeModal = () => {
+        overlay.classList.remove('show');
+        modal.classList.remove('show');
+        setTimeout(() => {
+            overlay.remove();
+            modal.remove();
+        }, 300);
+    };
+
+    modal.querySelector('.modal-close').addEventListener('click', closeModal);
+    overlay.addEventListener('click', closeModal);
+    document.addEventListener('keydown', function onKeyDown(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', onKeyDown);
+        }
+    });
+}
+
+
+// Função para mostrar loading
+function showLoading() {
+    document.querySelectorAll('.cards-grid').forEach(grid => {
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #b3b3b3; padding: 40px;">Carregando músicas...</div>';
+    });
+}
+
+// Função para esconder loading
+function hideLoading() {
+    // Loading será removido quando os dados forem carregados
 }
 
 // Função de busca
@@ -355,14 +374,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event listeners para cards existentes
     document.querySelectorAll('.card').forEach(addCardEventListeners);
 
-    // Event listeners para quick picks
-    document.querySelectorAll('.quick-pick').forEach(pick => {
-        pick.addEventListener('click', () => {
-            const playlistName = pick.querySelector('.quick-pick-info').textContent;
-            showNotification(`Abrindo: ${playlistName}`);
-        });
-    });
-
     // Adicionar campo de busca (exemplo simples)
     const topBar = document.querySelector('.top-bar');
     const searchContainer = document.createElement('div');
@@ -421,12 +432,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Carregar dados iniciais (remova se não tiver API key)
-    // if (LASTFM_API_KEY !== 'SUA_API_KEY_AQUI') {
     loadMusicData();
-    // } else {
-    //     console.log('Configure sua API key do Last.fm para carregar dados reais');
-    // }
 });
 
 // Adicionar CSS para animações
