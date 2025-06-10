@@ -122,9 +122,10 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(54, 54, 54, 0.7);
             border: none;
-            color: #b3b3b3;
+            color: #fff;
+            font-weight: bold;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -133,7 +134,7 @@
         }
 
         .nav-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(148, 141, 141, 0.5);
             color: #ffffff;
         }
 

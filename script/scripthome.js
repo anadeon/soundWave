@@ -49,35 +49,14 @@ class LastFMService {
 
     }
 
-    // Buscar álbuns de um artista
-    async getArtistAlbums(artist, limit = 12) {
-        return await this.makeRequest('artist.gettopalbums', { artist, limit });
-    }
-
-    // Buscar informações de um álbum
-    async getAlbumInfo(artist, album) {
-        return await this.makeRequest('album.getinfo', { artist, album });
-    }
-
-    // Buscar faixas similares
-    async getSimilarTracks(artist, track, limit = 12) {
-        return await this.makeRequest('track.getsimilar', { artist, track, limit });
-    }
-
     // Buscar informações de uma música
     async getTrackInfo(track, artist) {
         return await this.makeRequest('track.getInfo', { track, artist, lang: 'pt' });
     }
 
-
-
     // Buscar por termo
     async searchArtists(query, limit = 12) {
         return await this.makeRequest('artist.search', { artist: query, limit });
-    }
-
-    async searchAlbums(query, limit = 12) {
-        return await this.makeRequest('album.search', { album: query, limit });
     }
 
     async searchTracks(query, limit = 12) {
@@ -101,7 +80,7 @@ function createMusicCard(item, type = 'album') {
         imageUrl = item.image && item.image.find(img => img.size === 'large')?.['#text'] || '';
     } else if (type === 'tag') {
         title = item.name;
-        description = `${item.taggings ? Number(item.taggings).toLocaleString() : 'Popular tag'}`;
+        description = `${item.taggings ? Number(item.taggings).toLocaleString() : 'Popular tag'} reproduções`;
         imageUrl = '';
     } else if (type === 'track') {
         title = item.name;
@@ -136,17 +115,17 @@ async function loadMusicData() {
 
         // Atualizar seção "artistas mais escutados" com top artistas
         if (topArtists && topArtists.artists) {
-            updateSection('recently-played', topArtists.artists.artist, 'artist');
+            updateSection('top-artists', topArtists.artists.artist, 'artist');
         }
 
         // Atualizar seção "músicas mais escutadas" com top tracks
         if (topTracks && topTracks.tracks) {
-            updateSection('made-for-you', topTracks.tracks.track, 'track');
+            updateSection('top-tracks', topTracks.tracks.track, 'track');
         }
 
-        // Atualizar seção "álbuns mais escutados" com top álbuns
+        // Atualizar seção "gêneros mais populares" com top tags
         if (topTags && topTags.tags) {
-            updateSection('trending', topTags.tags.tag, 'tag');
+            updateSection('top-tags', topTags.tags.tag, 'tag');
         }
 
         hideLoading();
@@ -319,23 +298,23 @@ async function performSearch(query) {
     try {
         showLoading();
 
-        const [artists, albums, tracks] = await Promise.all([
+        //  Oculta a seção de gêneros ao buscar
+        const tagsSection = document.getElementById('top-tags');
+        if (tagsSection) tagsSection.style.display = 'none';
+
+        const [artists, tracks] = await Promise.all([
             lastfm.searchArtists(query, 6),
-            lastfm.searchAlbums(query, 6),
+            // lastfm.searchAlbums(query, 6),
             lastfm.searchTracks(query, 6)
         ]);
 
         // Atualizar seções com resultados da busca
         if (artists && artists.results && artists.results.artistmatches) {
-            updateSection('recently-played', artists.results.artistmatches.artist, 'artist');
-        }
-
-        if (albums && albums.results && albums.results.albummatches) {
-            updateSection('made-for-you', albums.results.albummatches.album, 'album');
+            updateSection('top-artists', artists.results.artistmatches.artist, 'artist');
         }
 
         if (tracks && tracks.results && tracks.results.trackmatches) {
-            updateSection('trending', tracks.results.trackmatches.track, 'track');
+            updateSection('top-tracks', tracks.results.trackmatches.track, 'track');
         }
 
         hideLoading();
@@ -349,7 +328,7 @@ async function performSearch(query) {
 document.addEventListener('DOMContentLoaded', () => {
     // Adicionar IDs às seções para facilitar a atualização
     const sections = document.querySelectorAll('.section');
-    const sectionIds = ['recently-played', 'made-for-you', 'trending'];
+    const sectionIds = ['top-artists', 'top-tracks', 'top-tags'];
     sections.forEach((section, index) => {
         if (sectionIds[index]) {
             section.id = sectionIds[index];
@@ -369,6 +348,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadMusicData();
             }
         });
+
+        // Voltar para tela inicial ao clicar no botão "‹"
+        document.querySelector('.nav-btn').addEventListener('click', () => {
+            // Limpar campo de busca, se houver
+            const searchInput = document.querySelector('.top-bar input[type="text"]');
+            if (searchInput) searchInput.value = '';
+
+            // Mostrar novamente a seção de gêneros (se foi escondida)
+            const trendingSection = document.getElementById('trending');
+            if (trendingSection) trendingSection.style.display = '';
+
+            // Carrega os dados iniciais
+            loadMusicData();
+        });
+
     });
 
     // Event listeners para cards existentes
@@ -435,14 +429,10 @@ document.addEventListener('DOMContentLoaded', () => {
     loadMusicData();
 });
 
+
 // Adicionar CSS para animações
 const style = document.createElement('style');
 style.textContent = `
-            @keyframes slideIn {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-
             input:focus {
                 background: rgba(255, 255, 255, 0.15) !important;
                 border-color: #1db954 !important;
